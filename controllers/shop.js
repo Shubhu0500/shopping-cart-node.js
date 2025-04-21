@@ -139,7 +139,8 @@ exports.getCheckout = (req, res, next) => {
   req.user
     .populate('cart.items.productId')
     .then((user) => {
-      products = user.cart.items;
+      products = user.cart.items.filter((p) => p.productId); // Filter out null productId
+      // products = user.cart.items;
       products.forEach((p) => {
         total += p.quantity * p.productId.price;
       });
@@ -183,11 +184,14 @@ exports.getCheckout = (req, res, next) => {
 
 exports.getCheckoutSuccess = (req, res, next) => {
   req.user
-    .populate('cart.items.productId')
-    .then((user) => {
-      const products = user.cart.items.map((i) => {
-        return { quantity: i.quantity, product: { ...i.productId._doc } };
-      });
+  .populate('cart.items.productId')
+  .then((user) => {
+    const products = user.cart.items.map((i) => {
+      if (i.productId) {
+        return { quantity: i.quantity, product: { ...i.productId._doc } }; // Only proceed if productId exists
+      }
+      return null; // If productId is null or undefined, return null
+    }).filter(product => product !== null); // Filter out null entries
       const order = new Order({
         user: {
           email: req.user.email,

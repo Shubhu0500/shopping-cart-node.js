@@ -67,7 +67,31 @@ const accessLogStream = fs.createWriteStream(
   }
 );
 
-app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"], // Only allow resources from the same origin
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", // Allow inline scripts
+        "'nonce-' + res.locals.nonce", // Allow scripts with the correct nonce
+        'https://js.stripe.com' // Allow Stripe scripts
+      ],
+      styleSrc: [
+        "'self'", 
+        "'unsafe-inline'", // Allow inline styles
+        'https://fonts.googleapis.com' // Allow Google Fonts
+      ],
+      frameSrc: [
+        "'self'", 
+        'https://js.stripe.com' // Allow Stripe to load frames
+      ],
+      connectSrc: ["'self'", 'https://js.stripe.com'], // Allow Stripe to make network requests
+      imgSrc: ["'self'", 'data:', 'https://www.google-analytics.com'], // Allow images from self and external sources
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'], // Allow font loading from Google Fonts
+    },
+  })
+);
 app.use(compression());
 app.use(morgan('combined', { stream: accessLogStream }));
 
