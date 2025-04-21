@@ -72,22 +72,22 @@ app.use(
     directives: {
       defaultSrc: ["'self'"], // Only allow resources from the same origin
       scriptSrc: [
-        "'self'", 
+        "'self'",
         "'unsafe-inline'", // Allow inline scripts
         "'nonce-' + res.locals.nonce", // Allow scripts with the correct nonce
-        'https://js.stripe.com' // Allow Stripe scripts
+        'https://js.stripe.com', // Allow Stripe scripts
       ],
       styleSrc: [
-        "'self'", 
+        "'self'",
         "'unsafe-inline'", // Allow inline styles
-        'https://fonts.googleapis.com' // Allow Google Fonts
+        'https://fonts.googleapis.com', // Allow Google Fonts
       ],
       frameSrc: [
-        "'self'", 
-        'https://js.stripe.com' // Allow Stripe to load frames
+        "'self'",
+        'https://js.stripe.com', // Allow Stripe to load frames
       ],
       connectSrc: ["'self'", 'https://js.stripe.com'], // Allow Stripe to make network requests
-      imgSrc: ["'self'", 'data:', 'https://www.google-analytics.com'], // Allow images from self and external sources
+      imgSrc: ["'self'", 'data:', 'https://www.google-analytics.com', '*'], // Allow images from self and external sources
       fontSrc: ["'self'", 'https://fonts.gstatic.com'], // Allow font loading from Google Fonts
     },
   })

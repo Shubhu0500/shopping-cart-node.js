@@ -17,10 +17,10 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const image = req.file ? req.file.path : null;
+  const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  if (!image) {
+  if (!imageUrl) {
     return res.status(422).render('admin/edit-product', {
       pageTitle: 'Add product',
       path: '/admin/add-product',
@@ -52,7 +52,7 @@ exports.postAddProduct = (req, res, next) => {
       validationErrors: errors.array(),
     });
   }
-  const imageUrl = image;
+  // const imageUrl = image;
 
   const product = new Product({
     title: title,
@@ -106,7 +106,7 @@ exports.postEditProduct = (req, res, next) => {
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedPrice = req.body.price;
-  const image = req.file ? req.file.path : null;
+  const imageUrl = req.body.imageUrl;
   const updatedDescription = req.body.description;
   const errors = validationResult(req);
 
@@ -134,10 +134,10 @@ exports.postEditProduct = (req, res, next) => {
       product.title = updatedTitle;
       product.price = updatedPrice;
       product.description = updatedDescription;
-      if (image) {
-        fileHelper.deleteFile(product.imageUrl);
-        product.imageUrl = image;
-      }
+      product.imageUrl = imageUrl;
+      // if (image) {
+      //   fileHelper.deleteFile(product.imageUrl);
+      // }
       return product.save().then((result) => {
         console.log('UPDATED PRODUCT!');
         res.redirect('/admin/products');
@@ -169,6 +169,25 @@ exports.getProducts = (req, res, next) => {
     });
 };
 
+// exports.deleteProduct = (req, res, next) => {
+//   const prodId = req.params.productId;
+//   Product.findById(prodId)
+//     .then((product) => {
+//       if (!product) {
+//         return next(new Error('Product not found!'));
+//       }
+//       fileHelper.deleteFile(product.imageUrl);
+//       return Product.deleteOne({ _id: prodId, userId: req.user._id });
+//     })
+//     .then((result) => {
+//       console.log('DESTROYED PRODUCT');
+//       res.status(200).json({ message: 'Success!', redirectUrl: '/ ' });
+//     })
+//     .catch((err) => {
+//       res.status(500).json({ message: 'Product deletion failed!' });
+//     });
+// };
+
 exports.deleteProduct = (req, res, next) => {
   const prodId = req.params.productId;
   Product.findById(prodId)
@@ -176,12 +195,19 @@ exports.deleteProduct = (req, res, next) => {
       if (!product) {
         return next(new Error('Product not found!'));
       }
-      fileHelper.deleteFile(product.imageUrl);
+      // Check if the image is a local file before deleting
+      if (
+        product.imageUrl &&
+        !product.imageUrl.startsWith('http://') &&
+        !product.imageUrl.startsWith('https://')
+      ) {
+        fileHelper.deleteFile(product.imageUrl); // Delete local files only
+      }
       return Product.deleteOne({ _id: prodId, userId: req.user._id });
     })
     .then((result) => {
       console.log('DESTROYED PRODUCT');
-      res.status(200).json({ message: 'Success!', redirectUrl: '/ ' });
+      res.status(200).json({ message: 'Success!', redirectUrl: '/' });
     })
     .catch((err) => {
       res.status(500).json({ message: 'Product deletion failed!' });
